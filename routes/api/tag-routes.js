@@ -35,9 +35,11 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', (req, res) => {
   // create a new tag
-  Tag.create(req.body)
+  Tag.create({
+    tag_name: req.body.tag_name
+  })
     .then((tag) => {
-      if (req.body.tagIds.length) {
+      if (req.body.tagIds) {
         const tagIdArr = req.body.tagIds.map((tag_id) => {
           return {
             tag_id: tag.id,
