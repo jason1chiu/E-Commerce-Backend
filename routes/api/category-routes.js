@@ -37,18 +37,17 @@ router.post('/', (req, res) => {
   // create a new category
   Category.create(req.body)
   .then((category) => {
-    if (req.body.productIds.length) {
-      const productIdArr = req.body.productIdArr.map((product_id) => {
+    if (req.body.Id.length) {
+      const categoryIdArr = req.body.Id.map((category_id) => {
         return {
           category_id: category.id,
-          product_id,
         };
       });
-      return Product.bulkCreate(productIdArr);
+      return Category.bulkCreate(categoryIdArr);
     }
     res.status(200).json(category);
   })
-  .then((productIds) => res.status(200).json(productIds))
+  .then((categoryIds) => res.status(200).json(categoryIds))
   .catch((err) => {
     console.log(err);
     res.status(400).json(err);
@@ -63,34 +62,30 @@ router.put('/:id', (req, res) => {
     },
   })
   .then((updatedCategory) => {
-    return Product.findAll({
-      where: {
-        category_id: req.params.id
-      }
+    return Category.findAll({
     });
   })
-  .then((products) => {
-    const productIds = products.map(({id}) => id);
+  .then((category) => {
+    const categoryIds = category.map(({category_id}) => category_id);
 
-    const newProducts = req.body.productIds
-    .filter((product_id) => !productIds.include(product_id))
-    .map((product_id) => {
+    const newCategory = req.body.categoryIds
+    .filter((category_id) => !categoryIds.include(category_id))
+    .map((category_id) => {
       return {
-        category_id: req.params.id,
-        product_id,
+        category_id,
       };
     });
 
-    const productsToRemove = products
-    .filter(({id}) => !req.body.productIds.includes(id))
+    const categoryToRemove = category
+    .filter(({category_id}) => !req.body.categoryIds.includes(category_id))
     .map(({id}) => id); 
 
     return Promise.all([
-      Product.destroy({ where: {id: productsToRemove}}),
-      Product.bulkCreate(newProducts),
+      Category.destroy({ where: {id: categoryToRemove}}),
+      Category.bulkCreate(newCategory),
     ]);
   })
-  .then((updatedProducts) => res.json(updatedProducts))
+  .then((updatedCategory) => res.json(updatedCategory))
   .catch((err) => {
     console.log(err);
     res.status(400).json(err);
@@ -105,21 +100,21 @@ router.delete('/:id', (req, res) => {
     }
   })
   .then((category) => {
-    return Product.findAll({
+    return Category.findAll({
       where: {
-        category_id: req.params.id
+        id: req.params.id
       }
     });
   })
-  .then((products) => {
-    const productIds = products.map(({id}) => id);
-    return Product.destroy({
+  .then((category) => {
+    const categoryIds = category.map(({id}) => id);
+    return Category.destroy({
       where: {
-        id: productIds
+        id: categoryIds
       }
     });
   })
-  .then((deletedProducts) => res.json(deletedProducts))
+  .then((deletedCategory) => res.json(deletedCategory))
   .catch((err) => {
     console.log(err);
     res.status(500).json(err);
