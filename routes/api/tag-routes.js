@@ -77,28 +77,19 @@ router.put('/:id', (req, res) => {
 });
 
 router.delete('/:id', (req, res) => {
-  // delete on tag by its `id` value
+  // delete a tag by its `id` value
   Tag.destroy({
     where: {
       id: req.params.id
     }
   })
   .then((tag) => {
-    return ProductTag.findAll({
-      where: {
-        tag_id: req.params.id
-      }
-    });
+    if (!tag) {
+      res.status(404).json({ message: 'No tag found with this id' });
+      return;
+    }
+    res.json(tag);
   })
-  .then((productTags) => {
-    const productTagIds = productTags.map(({ id }) => id);
-    return ProductTag.destroy({
-      where: {
-        id: productTagIds
-      }
-    });
-  })
-  .then((deletedProductTagRows) => res.json(deletedProductTagRows))
   .catch((err) => {
     console.log(err);
     res.status(500).json(err);
