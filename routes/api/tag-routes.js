@@ -33,67 +33,67 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-router.post('/', (req, res) => {
-  // create a new tag
-  Tag.create({
-    tag_name: req.body.tag_name
-  })
-    .then((tag) => {
-      if (req.body.tagIds) {
-        const tagIdArr = req.body.tagIds.map((tag_id) => {
-          return {
-            tag_id: tag.id,
-          };
-        });
-        return Tag.bulkCreate(tagIdArr);
-      }
+router.post('/', async (req, res) => {
+  try {
+    const tag = await Tag.create({
+      tag_name: req.body.tag_name
+    });
+    
+    if (req.body.tagIds) {
+      const tagIdArr = req.body.tagIds.map((tag_id) => {
+        return {
+          tag_id: tag.id,
+        };
+      });
+      
+      await Tag.bulkCreate(tagIdArr);
+      const TagIds = tagIdArr.map(tag => tag.tag_id);
+      res.status(200).json(TagIds);
+    } else {
       res.status(200).json(tag);
-    })
-    .then((TagIds) => res.status(200).json(TagIds))
-    .catch((err) => {
-      console.log(err);
-      res.status(400).json(err);
-    });
-});
-
-router.put('/:id', (req, res) => {
-  // update a tag's name by its `id` value
-  Tag.update(req.body, {
-    where: {
-      id: req.params.id,
-    },
-  })
-    .then((updatedTag) => {
-      if (!updatedTag[0]) {
-        res.status(404).json({ message: 'No tag found with this id' });
-        return;
-      }
-      res.json(updatedTag);
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(400).json(err);
-    });
-});
-
-router.delete('/:id', (req, res) => {
-  // delete a tag by its `id` value
-  Tag.destroy({
-    where: {
-      id: req.params.id
     }
-  })
-  .then((tag) => {
+    
+  } catch (err) {
+    console.log(err);
+    res.status(400).json(err);
+  }
+});
+
+router.put('/:id', async (req, res) => {
+  try {
+    const updatedTag = await Tag.update(req.body, {
+      where: {
+        id: req.params.id,
+      },
+    });
+
+    if (!updatedTag[0]) {
+      res.status(404).json({ message: 'No tag found with this id' });
+      return;
+    }
+    res.json(updatedTag);
+  } catch (err) {
+    console.log(err);
+    res.status(400).json(err);
+  }
+});
+
+router.delete('/:id', async (req, res) => {
+  try {
+    const tag = await Tag.destroy({
+      where: {
+        id: req.params.id
+      }
+    });
     if (!tag) {
       res.status(404).json({ message: 'No tag found with this id' });
       return;
     }
     res.json(tag);
-  })
-  .catch((err) => {
+  } catch (err) {
     console.log(err);
     res.status(500).json(err);
-  });
+  }
 });
 
 module.exports = router;
